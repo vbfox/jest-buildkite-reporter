@@ -1,0 +1,15 @@
+{
+  "name": "jest-buildkite",
+  "version": "0.0.1",
+  "description": "Jest Buildkite reporter",
+  "main": "dist/index.js",
+  "repository": "https://github.com/vbfox/jest-buildkite",
+  "author": "Julien Roncaglia <julien@roncaglia.fr>",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^3.6.4"
+  },
+  "scripts": {
+    "build": "yarn tsc"
+  }
+}

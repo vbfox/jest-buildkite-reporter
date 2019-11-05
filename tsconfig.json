@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "noImplicitAny": true,
+        "strict": true,
+        "removeComments": false,
+        "allowSyntheticDefaultImports": true,
+        "noImplicitReturns": true,
+        "outDir": "dist"
+    }
+}
