@@ -6,9 +6,6 @@
         "noImplicitAny": true,
         "strict": true,
         "removeComments": false,
-        "allowSyntheticDefaultImports": true,
-        "outDir": "dist",
-        "declaration": true
-    },
-    "include": ["src"]
+        "allowSyntheticDefaultImports": true
+    }
 }

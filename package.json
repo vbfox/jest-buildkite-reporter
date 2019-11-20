@@ -7,9 +7,32 @@
   "author": "Julien Roncaglia <julien@roncaglia.fr>",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^3.6.4"
+    "@types/jest": "^24.0.23",
+    "@types/node": "^12.12.11",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.7.2"
   },
   "scripts": {
-    "build": "yarn tsc"
+    "build": "yarn tsc",
+    "prepublishOnly": "yarn build"
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
+  ],
+  "directories": {
+    "lib": "dist"
+  },
+  "keywords": [
+    "buildkite",
+    "jest",
+    "ci"
+  ],
+  "peerDependencies": {
+    "jest": "^24.9.0"
+  },
+  "dependencies": {
+    "buildkite-agent-node": "^0.0.2"
   }
 }

@@ -1,6 +1,6 @@
 # Jest Buildkite reporter
 
-Report Jest test results in buildkite output as annotations
+Report Jest test results in [BuildKite](https://buildkite.com/) output as annotations
 
 ## License
 
