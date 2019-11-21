@@ -1,4 +1,4 @@
-import { getEnv, annotate, AnnotationStyle } from 'buildkite-agent-node';
+import { getBuildkiteEnv, annotate, AnnotationStyle } from 'buildkite-agent-node';
 
 interface ReporterOptions {
     readonly debug?: boolean;
@@ -43,7 +43,7 @@ class JestBuildkiteReporter implements jest.Reporter {
     private config: Required<ReporterOptions>;
 
     constructor(private globalConfig: jest.GlobalConfig, options?: ReporterOptions) {
-        this.enabled = getEnv().isPresent;
+        this.enabled = getBuildkiteEnv().isPresent;
         this.uniqueKey = 'jest-' + (new Date().toISOString());
         this.currentPromise = Promise.resolve();
         this.status = {};

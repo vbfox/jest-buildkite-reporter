@@ -33,6 +33,6 @@
     "jest": "^24.9.0"
   },
   "dependencies": {
-    "buildkite-agent-node": "^0.0.2"
+    "buildkite-agent-node": "^0.0.3"
   }
 }
