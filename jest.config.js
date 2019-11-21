@@ -1,5 +1,7 @@
 module.exports = {
-    "reporters": ["default", ["<rootDir>/dist/index.js", { debug: true }]],
+    "reporters": ["default", ["<rootDir>/dist/index.js", {
+        debug: process.env.NODE_ENV === 'development'
+    }]],
     testMatch: [
         "**/__tests__/**/*.+(ts|tsx|js)",
         "**/?(*.)+(spec|test).+(ts|tsx|js)"
