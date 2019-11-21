@@ -18,7 +18,7 @@ interface JestStatus {
     endTime?: Date;
 }
 
-function renderJestStatus(cwd: string, status: JestStatus) {
+function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     let text = '';
     if (status.inProgress) {
         text += 'Tests are running for XXXs';
@@ -38,7 +38,7 @@ function renderJestStatus(cwd: string, status: JestStatus) {
     for(const testResult of status.result.testResults) {
         const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
         const path = testResult.testFilePath.replace(cwd + '/', '').replace(cwd, '');
-        text += `### ${emoji} ${path}\n\n` 
+        text += `## ${emoji} ${path}\n\n` 
         
         for(const assertionResult of testResult.testResults) {
             let assertionEmoji = '';
@@ -53,7 +53,7 @@ function renderJestStatus(cwd: string, status: JestStatus) {
             for (const failureMessage of assertionResult.failureMessages) {
                 text += '```term\n';
                 text += `${failureMessage}\n`;
-                text += '```\n';
+                text += '```\n\n';
             }
             text += '</details>\n\n';
         }
@@ -61,15 +61,19 @@ function renderJestStatus(cwd: string, status: JestStatus) {
         if (testResult.failureMessage) {
             text += '<details><summary>Failure message</summary>\n\n';
             text += '```term\n';
-            text +=  testResult.failureMessage + '\n';
-            text += '```\n';
+            text +=  testResult.failureMessage + 'EOM\n';
+            text += '```\n\n';
             text += '</details>\n\n';
         }
 
-        console.log(testResult);
+        if (debug) {
+            console.log(testResult);
+        }
     }
 
-    require('fs').writeFile("debug.md", text);
+    if (debug) {
+        require('fs').writeFileSync("debug.md", text);
+    }
     return text;
 }
 
@@ -118,7 +122,7 @@ class JestBuildkiteReporter implements jest.Reporter {
             return;
         }
 
-        const text = renderJestStatus(this.cwd, this.status);
+        const text = renderJestStatus(this.cwd, this.status, this.config.debug);
         const result = this.status.result;
         const style = result.success
                 ? 'success'
