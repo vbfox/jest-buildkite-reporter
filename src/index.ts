@@ -11,27 +11,65 @@ function getDefaultOptions(): Required<ReporterOptions> {
 }
 
 interface JestStatus {
+    inProgress: boolean;
     tests?: jest.Test[];
-    estimatedTime?: number;
-    result?: jest.AggregatedResult;
+    estimatedTime: number;
+    result: jest.AggregatedResult;
+    endTime?: Date;
 }
 
-function renderJestStatus(status: JestStatus) {
-    let text = '# Tests\n\n';
-    if (status.estimatedTime) {
-        text += `Estimated time: ${status.estimatedTime}s\n`;
+function renderJestStatus(cwd: string, status: JestStatus) {
+    let text = '';
+    if (status.inProgress) {
+        text += 'Tests are running for XXXs';
+    } else {
+        text += 'Tests finished in XXXs';
+    }
+    if (status.inProgress) {
+        text += ` of ${status.estimatedTime}s estimated`;
     }
 
-    if (status.result) {
-        text += `**Test Suites**: ${status.result.numFailedTestSuites} failed, ${status.result.numTotalTestSuites} total\n`;
-        text += `**Tests**: ${status.result.numFailedTests} failed, ${status.result.numTotalTests} total\n`;
+    text += '\n\n';
 
-        text += '## Test suites\n';
-        for(const testResult of status.result.testResults) {
-            console.log(testResult);
+    text += `**Test Suites**: ${status.result.numFailedTestSuites} failed, ${status.result.numTotalTestSuites} total\n\n`;
+    text += `**Tests**: ${status.result.numFailedTests} failed, ${status.result.numTotalTests} total\n\n`;
+
+    text += '';
+    for(const testResult of status.result.testResults) {
+        const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
+        const path = testResult.testFilePath.replace(cwd + '/', '').replace(cwd, '');
+        text += `### ${emoji} ${path}\n\n` 
+        
+        for(const assertionResult of testResult.testResults) {
+            let assertionEmoji = '';
+            switch(assertionResult.status) {
+                case 'failed' : assertionEmoji = '❌'; break;
+                case 'passed' : assertionEmoji = '✅'; break;
+                case 'pending' : assertionEmoji = '⏱'; break;
+                case 'skipped' : assertionEmoji = '⏭'; break;
+                default: assertionEmoji = assertionResult.status; break;
+            }
+            text += `<details><summary>${assertionEmoji} ${assertionResult.fullName}</summary>\n\n`;
+            for (const failureMessage of assertionResult.failureMessages) {
+                text += '```term\n';
+                text += `${failureMessage}\n`;
+                text += '```\n';
+            }
+            text += '</details>\n\n';
         }
+        
+        if (testResult.failureMessage) {
+            text += '<details><summary>Failure message</summary>\n\n';
+            text += '```term\n';
+            text +=  testResult.failureMessage + '\n';
+            text += '```\n';
+            text += '</details>\n\n';
+        }
+
+        console.log(testResult);
     }
 
+    require('fs').writeFile("debug.md", text);
     return text;
 }
 
@@ -39,16 +77,16 @@ class JestBuildkiteReporter implements jest.Reporter {
     private uniqueKey: string;
     private enabled: boolean;
     private currentPromise: Promise<any>;
-    private status: JestStatus;
+    private status: JestStatus | undefined;
     private config: Required<ReporterOptions>;
+    private cwd: string;
 
     constructor(private globalConfig: jest.GlobalConfig, options?: ReporterOptions) {
-        this.enabled = getBuildkiteEnv().isPresent;
         this.uniqueKey = 'jest-' + (new Date().toISOString());
         this.currentPromise = Promise.resolve();
-        this.status = {};
         this.config = { ...getDefaultOptions(), ...options };
-
+        this.enabled = getBuildkiteEnv().isPresent || this.config.debug;
+        this.cwd = process.cwd();
         if (!!globalConfig.verbose) {
             console.log('Jest Buildkite reporter is ' + (this.enabled ? 'enabled' : 'disabled'));
             console.log('\tOptions', options)
@@ -76,14 +114,17 @@ class JestBuildkiteReporter implements jest.Reporter {
     }
 
     private sendNextAnnotation() {
-        const text = renderJestStatus(this.status);
-        const style = this.status.result
-            ? (this.status.result.success
+        if (this.status === undefined) {
+            return;
+        }
+
+        const text = renderJestStatus(this.cwd, this.status);
+        const result = this.status.result;
+        const style = result.success
                 ? 'success'
-                : (((this.status.result.numFailedTests > 0) || (this.status.result.numFailedTestSuites > 0))
+                : (((result.numFailedTests > 0) || (result.numFailedTestSuites > 0))
                     ? 'error'
-                    : 'info'))
-            : 'info';
+                    : 'info');
         this.continue(() => this.annotate(text, style));
     }
 
@@ -92,8 +133,11 @@ class JestBuildkiteReporter implements jest.Reporter {
             return;
         }
 
-        this.status.estimatedTime = options.estimatedTime;
-        this.status.result = results;
+        this.status = {
+            inProgress: true,
+            estimatedTime: options.estimatedTime,
+            result: results
+        };
         this.sendNextAnnotation();
     }
 
@@ -102,7 +146,7 @@ class JestBuildkiteReporter implements jest.Reporter {
             return;
         }
 
-        this.status.result = aggregatedResult;
+        this.status!.result = aggregatedResult;
         this.sendNextAnnotation();
     }
 
@@ -119,6 +163,9 @@ class JestBuildkiteReporter implements jest.Reporter {
             return;
         }
         
+        this.status!.inProgress = false;
+        this.status!.result = results;
+        this.status!.endTime = new Date();
         return this.sendNextAnnotation();
     }
 }
