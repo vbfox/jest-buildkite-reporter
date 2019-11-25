@@ -65,9 +65,14 @@ class MarkdownBuilder {
         this.text += '<br />\n';
     }
 
-
     appendColor(color: string, s: string) {
-        this.append(`<span class="term-fg31" style="color: ${color}">${s}</span>`);
+        let className;
+        switch (color) {
+            case 'red': className = 'term-fg31'; break;
+            case 'green': className = 'term-fg32'; break;
+        }
+        const classAttr = className ? `class="${className}"` : '';
+        this.append(`<span ${classAttr} style="color: ${color}">${s}</span>`);
     }
 
     appendColorIf(color: string, s: string, condition: boolean) {
