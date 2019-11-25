@@ -1,5 +1,5 @@
 {
-  "name": "jest-buildkite",
+  "name": "jest-buildkite-reporter",
   "version": "0.0.1",
   "description": "Jest Buildkite reporter",
   "main": "dist/index.js",
