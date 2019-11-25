@@ -67,7 +67,7 @@ class MarkdownBuilder {
 
 
     appendColor(color: string, s: string) {
-        this.append(`<span style="color: ${color}">${s}</span>`);
+        this.append(`<span class="term-fg31" style="color: ${color}">${s}</span>`);
     }
 
     appendColorIf(color: string, s: string, condition: boolean) {
