@@ -42,26 +42,88 @@ function assertionResultNameToString(result: jest.AssertionResult) {
     return allTitles.join(' ➤ ');
 }
 
-export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
-    let text = '';
+class MarkdownBuilder {
+    private text: string = '';
+
+    append(s: string) {
+        this.text += s;
+    }
+
+    appendLine(s?: string) {
+        if (s) {
+            this.text += s + '\n';
+        } else {
+            this.text += '\n';
+        }
+    }
+
+    appendParagraphBreak() {
+        this.text += '\n\n';
+    }
+
+    appendLineBreak() {
+        this.text += '<br />\n';
+    }
+
+
+    appendColor(color: string, s: string) {
+        this.append(`<font color="${color}">${s}</font>`);
+    }
+
+    appendColorIf(color: string, s: string, condition: boolean) {
+        if (condition) {
+            this.appendColor(color, s);
+        } else {
+            this.append(s);
+        }
+    }
+
+    toString() {
+        return this.text;
+    }
+}
+
+function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     if (status.inProgress) {
         const time = (new Date()).valueOf() - status.result.startTime;
-        text += `Tests are running for ${humanizeDuration(time)}`;
+        builder.append(`Tests are running for ${humanizeDuration(time)}`);
     } else {
         const end = (status.endTime || new Date()).valueOf();
         const time = end - status.result.startTime
-        text += `Tests finished in ${humanizeDuration(time)}`;
+        builder.append(`Tests finished in ${humanizeDuration(time)}`);
     }
     if (status.inProgress) {
-        text += ` of ${humanizeDuration(status.estimatedTime)} estimated`;
+        builder.append(` of ${humanizeDuration(status.estimatedTime)} estimated`);
     }
 
+    builder.appendParagraphBreak();
+
+    builder.append('**Test Suites**: ');
+    const numFailedTestSuites = status.result.numFailedTestSuites;
+    builder.appendColorIf('red', `${numFailedTestSuites} failed`, numFailedTestSuites > 0);
+    builder.append(', ');
+    const numPassedTestSuites = status.result.numPassedTestSuites;
+    builder.appendColorIf('lightgreen', `${numPassedTestSuites} passed</font>`, numPassedTestSuites > 0);
+    builder.append(', ');
+    builder.append(`${status.result.numTotalTestSuites} total)`);
+    
+    builder.appendLineBreak();
+
+    builder.appendLine('**Tests**: ');
+    const numFailedTests = status.result.numFailedTests;
+    builder.appendColorIf('red', `${numFailedTests} failed`, numFailedTests > 0);
+    builder.append(', ');
+    const numPassedTests = status.result.numPassedTests;
+    builder.appendColorIf('lightgreen', `${numPassedTests} passed</font>`, numPassedTests > 0);
+    builder.append(', ');
+    builder.append(`${status.result.numTotalTests} total)`);
+}
+
+export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
+    const builder = new MarkdownBuilder();
+    getJestStatusSummary(status, builder);
+    let text = builder.toString();
     text += '\n\n';
-
-    text += `**Test Suites**: ${status.result.numFailedTestSuites} failed, ${status.result.numTotalTestSuites} total\n\n`;
-    text += `**Tests**: ${status.result.numFailedTests} failed, ${status.result.numTotalTests} total\n\n`;
-
-    text += '';
     const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
     for(const testResult of orderedTests) {
         const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
