@@ -37,6 +37,11 @@ function getStatusEmoji(status: jest.Status) {
     }
 }
 
+function assertionResultNameToString(result: jest.AssertionResult) {
+    const allTitles = [...result.ancestorTitles, result.title];
+    return allTitles.join(' ➤ ');
+}
+
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     let text = '';
     if (status.inProgress) {
@@ -65,21 +70,15 @@ export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean
         
         const orderedAssertions = orderBy(testResult.testResults, ['status', 'fullName']);
         for(const assertionResult of orderedAssertions) {
-            let assertionEmoji = getStatusEmoji(assertionResult.status);
-            text += `<details><summary>${assertionEmoji} ${assertionResult.fullName}</summary>\n\n`;
+            const assertionEmoji = getStatusEmoji(assertionResult.status);
+            const name = assertionResultNameToString(assertionResult);
+
+            text += `<details><summary>${assertionEmoji} ${name}</summary>\n\n`;
             for (const failureMessage of assertionResult.failureMessages) {
                 text += '```term\n';
                 text += `${failureMessage}\n`;
                 text += '```\n\n';
             }
-            text += '</details>\n\n';
-        }
-        
-        if (testResult.failureMessage) {
-            text += '<details><summary>Failure message</summary>\n\n';
-            text += '```term\n';
-            text +=  testResult.failureMessage + 'EOM\n';
-            text += '```\n\n';
             text += '</details>\n\n';
         }
 
