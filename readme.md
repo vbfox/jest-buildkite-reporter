@@ -1,6 +1,8 @@
 # Jest Buildkite reporter
 
-Report Jest test results in [BuildKite](https://buildkite.com/) output as annotations
+[![npm](https://img.shields.io/npm/v/jest-buildkite-reporter)](https://www.npmjs.com/package/jest-buildkite-reporter)
+
+Report Jest test results in [Buildkite](https://buildkite.com/) output as annotations
 
 ## License
 
