@@ -67,7 +67,7 @@ class MarkdownBuilder {
 
 
     appendColor(color: string, s: string) {
-        this.append(`<font color="${color}">${s}</font>`);
+        this.append(`<span style="color: ${color}">${s}</span>`);
     }
 
     appendColorIf(color: string, s: string, condition: boolean) {
@@ -103,7 +103,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     builder.appendColorIf('red', `${numFailedTestSuites} failed`, numFailedTestSuites > 0);
     builder.append(', ');
     const numPassedTestSuites = status.result.numPassedTestSuites;
-    builder.appendColorIf('lightgreen', `${numPassedTestSuites} passed</font>`, numPassedTestSuites > 0);
+    builder.appendColorIf('green', `${numPassedTestSuites} passed</font>`, numPassedTestSuites > 0);
     builder.append(', ');
     builder.append(`${status.result.numTotalTestSuites} total)`);
     
@@ -114,7 +114,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     builder.appendColorIf('red', `${numFailedTests} failed`, numFailedTests > 0);
     builder.append(', ');
     const numPassedTests = status.result.numPassedTests;
-    builder.appendColorIf('lightgreen', `${numPassedTests} passed</font>`, numPassedTests > 0);
+    builder.appendColorIf('green', `${numPassedTests} passed</font>`, numPassedTests > 0);
     builder.append(', ');
     builder.append(`${status.result.numTotalTests} total)`);
 }
