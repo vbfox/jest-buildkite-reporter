@@ -62,3 +62,4 @@ typings/
 
 dist/
 *.js
+debug.md
