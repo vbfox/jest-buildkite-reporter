@@ -83,7 +83,7 @@ class MarkdownBuilder {
         }
 
         if (className) {
-            this.append(`<span className="${className}">`);
+            this.append(`<span class="${className}">`);
         }
         
         this.append(`<font color="${colorValue}">${s}</font>`);
