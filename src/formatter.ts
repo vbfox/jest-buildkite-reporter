@@ -66,13 +66,31 @@ class MarkdownBuilder {
     }
 
     appendColor(color: string, s: string) {
+        // Class names are a hack, Buildkite filter the <font> element
+        // But they allow className and have a wide library of colors
+        // in their terminal css renderer.
         let className;
+        let colorValue = color;
         switch (color) {
-            case 'red': className = 'term-fg31'; break;
-            case 'green': className = 'term-fg32'; break;
+            case 'red':
+                className = 'term-fgx160';
+                colorValue = '#d70000';
+                break;
+            case 'green':
+                className = 'term-fgx70';
+                colorValue = '#5faf00';
+                break;
         }
-        const classAttr = className ? `class="${className}"` : '';
-        this.append(`<span ${classAttr} style="color: ${color}">${s}</span>`);
+
+        if (className) {
+            this.append(`<span className="${className}">`);
+        }
+        
+        this.append(`<font color="${colorValue}">${s}</font>`);
+
+        if (className) {
+            this.append(`</span>`);
+        }
     }
 
     appendColorIf(color: string, s: string, condition: boolean) {
@@ -110,7 +128,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     const numPassedTestSuites = status.result.numPassedTestSuites;
     builder.appendColorIf('green', `${numPassedTestSuites} passed</font>`, numPassedTestSuites > 0);
     builder.append(', ');
-    builder.append(`${status.result.numTotalTestSuites} total)`);
+    builder.append(`${status.result.numTotalTestSuites} total`);
     
     builder.appendLineBreak();
 
@@ -121,7 +139,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     const numPassedTests = status.result.numPassedTests;
     builder.appendColorIf('green', `${numPassedTests} passed</font>`, numPassedTests > 0);
     builder.append(', ');
-    builder.append(`${status.result.numTotalTests} total)`);
+    builder.append(`${status.result.numTotalTests} total`);
 }
 
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
