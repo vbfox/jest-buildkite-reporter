@@ -8,6 +8,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^24.0.23",
+    "@types/lodash": "^4.14.149",
     "@types/node": "^12.12.11",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
@@ -33,6 +34,7 @@
     "jest": "^24.9.0"
   },
   "dependencies": {
-    "buildkite-agent-node": "^0.0.3"
+    "buildkite-agent-node": "^0.0.3",
+    "lodash": "^4.17.15"
   }
 }

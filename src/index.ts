@@ -1,4 +1,5 @@
 import { getBuildkiteEnv, annotate, AnnotationStyle } from 'buildkite-agent-node';
+import { orderBy } from 'lodash';
 
 interface ReporterOptions {
     readonly debug?: boolean;
@@ -18,6 +19,20 @@ interface JestStatus {
     endTime?: Date;
 }
 
+function formatRelativePath(root: string, path: string) {
+    return path.replace(root + '/', '').replace(root, '');
+}
+
+function getStatusEmoji(status: jest.Status) {
+    switch(status) {
+        case 'failed' : return '❌';
+        case 'passed' : return '✅';
+        case 'pending' : return '⏱';
+        case 'skipped' : return '⏭';
+        default: return '❓';
+    }
+}
+
 function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     let text = '';
     if (status.inProgress) {
@@ -35,20 +50,15 @@ function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     text += `**Tests**: ${status.result.numFailedTests} failed, ${status.result.numTotalTests} total\n\n`;
 
     text += '';
-    for(const testResult of status.result.testResults) {
+    const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
+    for(const testResult of orderedTests) {
         const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
-        const path = testResult.testFilePath.replace(cwd + '/', '').replace(cwd, '');
+        const path = formatRelativePath(cwd, testResult.testFilePath);
         text += `## ${emoji} ${path}\n\n` 
         
-        for(const assertionResult of testResult.testResults) {
-            let assertionEmoji = '';
-            switch(assertionResult.status) {
-                case 'failed' : assertionEmoji = '❌'; break;
-                case 'passed' : assertionEmoji = '✅'; break;
-                case 'pending' : assertionEmoji = '⏱'; break;
-                case 'skipped' : assertionEmoji = '⏭'; break;
-                default: assertionEmoji = assertionResult.status; break;
-            }
+        const orderedAssertions = orderBy(testResult.testResults, ['status', 'fullName']);
+        for(const assertionResult of orderedAssertions) {
+            let assertionEmoji = getStatusEmoji(assertionResult.status);
             text += `<details><summary>${assertionEmoji} ${assertionResult.fullName}</summary>\n\n`;
             for (const failureMessage of assertionResult.failureMessages) {
                 text += '```term\n';
