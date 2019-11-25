@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Jest Buildkite reporter",
   "main": "dist/index.js",
-  "repository": "https://github.com/vbfox/jest-buildkite",
+  "repository": "https://github.com/vbfox/jest-buildkite-reporter",
   "author": "Julien Roncaglia <julien@roncaglia.fr>",
   "license": "MIT",
   "devDependencies": {
