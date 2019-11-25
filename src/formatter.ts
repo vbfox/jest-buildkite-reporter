@@ -1,6 +1,27 @@
 
 import { orderBy } from 'lodash';
 import { JestStatus } from './status';
+import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts';
+
+const durationHumanizer = new HumanizeDuration(new HumanizeDurationLanguage());
+durationHumanizer.setOptions({
+    units: ['y', 'mo', 'd', 'w', 'h', 'm', 's', 'ms'],
+    language: 'shortEn',
+    languages: {
+      shortEn: {
+        y: () => 'y',
+        mo: () => 'mo',
+        w: () => 'w',
+        d: () => 'd',
+        h: () => 'h',
+        m: () => 'm',
+        s: () => 's',
+        ms: () => 'ms',
+      }
+    }
+})
+
+const humanizeDuration = durationHumanizer.humanize.bind(durationHumanizer);
 
 function formatRelativePath(root: string, path: string) {
     return path.replace(root + '/', '').replace(root, '');
@@ -19,12 +40,15 @@ function getStatusEmoji(status: jest.Status) {
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     let text = '';
     if (status.inProgress) {
-        text += 'Tests are running for XXXs';
+        const time = (new Date()).valueOf() - status.result.startTime;
+        text += `Tests are running for ${humanizeDuration(time)}`;
     } else {
-        text += 'Tests finished in XXXs';
+        const end = (status.endTime || new Date()).valueOf();
+        const time = end - status.result.startTime
+        text += `Tests finished in ${humanizeDuration(time)}`;
     }
     if (status.inProgress) {
-        text += ` of ${status.estimatedTime}s estimated`;
+        text += ` of ${humanizeDuration(status.estimatedTime)} estimated`;
     }
 
     text += '\n\n';
