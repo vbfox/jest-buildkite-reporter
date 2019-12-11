@@ -126,7 +126,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     builder.appendColorIf('red', `${numFailedTestSuites} failed`, numFailedTestSuites > 0);
     builder.append(', ');
     const numPassedTestSuites = status.result.numPassedTestSuites;
-    builder.appendColorIf('green', `${numPassedTestSuites} passed</font>`, numPassedTestSuites > 0);
+    builder.appendColorIf('green', `${numPassedTestSuites} passed`, numPassedTestSuites > 0);
     builder.append(', ');
     builder.append(`${status.result.numTotalTestSuites} total`);
     
@@ -137,7 +137,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     builder.appendColorIf('red', `${numFailedTests} failed`, numFailedTests > 0);
     builder.append(', ');
     const numPassedTests = status.result.numPassedTests;
-    builder.appendColorIf('green', `${numPassedTests} passed</font>`, numPassedTests > 0);
+    builder.appendColorIf('green', `${numPassedTests} passed`, numPassedTests > 0);
     builder.append(', ');
     builder.append(`${status.result.numTotalTests} total`);
 }
