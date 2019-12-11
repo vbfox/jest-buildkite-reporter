@@ -37,6 +37,16 @@ function getStatusEmoji(status: jest.Status) {
     }
 }
 
+function getStatusText(status: jest.Status) {
+    switch(status) {
+        case 'failed' : return 'Failed';
+        case 'passed' : return 'Passed';
+        case 'pending' : return 'Pending';
+        case 'skipped' : return 'Skipped';
+        default: return '❓';
+    }
+}
+
 function assertionResultNameToString(result: jest.AssertionResult) {
     const allTitles = [...result.ancestorTitles, result.title];
     return allTitles.join(' ➤ ');
@@ -102,6 +112,7 @@ class MarkdownBuilder {
     }
 
     appendTerm(text: string) {
+        this.appendLine();
         this.appendLine('```term');
         this.appendLine(text);
         this.appendLine('```');
@@ -148,36 +159,45 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     builder.append(`${status.result.numTotalTests} total`);
 }
 
+function appendAssertionResult(assertionResult: jest.AssertionResult, builder: MarkdownBuilder) {
+    const assertionEmoji = getStatusEmoji(assertionResult.status);
+    const name = assertionResultNameToString(assertionResult);
+
+    builder.appendLine(`<details><summary>${assertionEmoji} ${name}</summary>`);
+    builder.append(getStatusText(assertionResult.status));
+    if (assertionResult.duration) {
+        builder.append(` in: ${humanizeDuration(assertionResult.duration)}`);
+    }
+    builder.appendLine();
+    for (const failureMessage of assertionResult.failureMessages) {
+        builder.appendTerm(failureMessage);
+        builder.appendLine();
+    }
+    builder.appendLine('</details>');
+    builder.appendLine();
+}
+
+function appendTestResult(cwd: string, testResult: jest.TestResult, builder: MarkdownBuilder) {
+    const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
+    const path = formatRelativePath(cwd, testResult.testFilePath);
+    builder.appendLine(`## ${emoji} ${path}`);
+    builder.appendLine();
+    
+    const orderedAssertions = orderBy(testResult.testResults, ['status', 'fullName']);
+    for(const assertionResult of orderedAssertions) {
+        appendAssertionResult(assertionResult, builder);
+    }
+}
+
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     const builder = new MarkdownBuilder();
     getJestStatusSummary(status, builder);
     builder.appendLine();
     builder.appendLine();
+
     const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
     for(const testResult of orderedTests) {
-        const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
-        const path = formatRelativePath(cwd, testResult.testFilePath);
-        builder.appendLine(`## ${emoji} ${path}`);
-        builder.appendLine();
-        
-        const orderedAssertions = orderBy(testResult.testResults, ['status', 'fullName']);
-        for(const assertionResult of orderedAssertions) {
-            const assertionEmoji = getStatusEmoji(assertionResult.status);
-            const name = assertionResultNameToString(assertionResult);
-
-            builder.appendLine(`<details><summary>${assertionEmoji} ${name}</summary>`);
-            builder.appendLine();
-            for (const failureMessage of assertionResult.failureMessages) {
-                builder.appendTerm(failureMessage);
-                builder.appendLine();
-            }
-            builder.appendLine('</details>');
-            builder.appendLine();
-        }
-
-        if (debug) {
-            console.log(testResult);
-        }
+        appendTestResult(cwd, testResult, builder);
     }
 
     const text = builder.toString();
