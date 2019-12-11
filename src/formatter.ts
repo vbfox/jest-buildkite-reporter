@@ -101,6 +101,12 @@ class MarkdownBuilder {
         }
     }
 
+    appendTerm(text: string) {
+        this.appendLine('```term');
+        this.appendLine(text);
+        this.appendLine('```');
+    }
+
     toString() {
         return this.text;
     }
@@ -145,26 +151,28 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     const builder = new MarkdownBuilder();
     getJestStatusSummary(status, builder);
-    let text = builder.toString();
-    text += '\n\n';
+    builder.appendLine();
+    builder.appendLine();
     const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
     for(const testResult of orderedTests) {
         const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
         const path = formatRelativePath(cwd, testResult.testFilePath);
-        text += `## ${emoji} ${path}\n\n` 
+        builder.appendLine(`## ${emoji} ${path}`);
+        builder.appendLine();
         
         const orderedAssertions = orderBy(testResult.testResults, ['status', 'fullName']);
         for(const assertionResult of orderedAssertions) {
             const assertionEmoji = getStatusEmoji(assertionResult.status);
             const name = assertionResultNameToString(assertionResult);
 
-            text += `<details><summary>${assertionEmoji} ${name}</summary>\n\n`;
+            builder.appendLine(`<details><summary>${assertionEmoji} ${name}</summary>`);
+            builder.appendLine();
             for (const failureMessage of assertionResult.failureMessages) {
-                text += '```term\n';
-                text += `${failureMessage}\n`;
-                text += '```\n\n';
+                builder.appendTerm(failureMessage);
+                builder.appendLine();
             }
-            text += '</details>\n\n';
+            builder.appendLine('</details>');
+            builder.appendLine();
         }
 
         if (debug) {
@@ -172,6 +180,7 @@ export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean
         }
     }
 
+    const text = builder.toString();
     if (debug) {
         require('fs').writeFileSync("debug.md", text);
     }
