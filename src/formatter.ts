@@ -209,9 +209,12 @@ function appendConsole(cwd: string, console: ConsoleBuffer, builder: MarkdownBui
         const relativePath = formatRelativePath(cwd, path);
         builder.append(' * ');
         builder.appendColor('lightgrey', 'console.');
+        let prepend = '';
         if (logEntry.type === 'error') {
+            prepend = '\u001b[31m';
             builder.appendColor('red', logEntry.type);
         } else if (logEntry.type === 'warn') {
+            prepend = '\u001b[33m';
             builder.appendColor('yellow', logEntry.type);
         } else {
             builder.append(logEntry.type);
@@ -221,7 +224,7 @@ function appendConsole(cwd: string, console: ConsoleBuffer, builder: MarkdownBui
         builder.appendColor('lightgrey', ':');
         builder.appendLine(line);
 
-        builder.appendTerm(logEntry.message, 3);
+        builder.appendTerm(prepend + logEntry.message, 3);
     }
     builder.appendLine();
     builder.appendDetailsEnd();
