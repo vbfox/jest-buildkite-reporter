@@ -1,8 +1,9 @@
 
 import { orderBy } from 'lodash';
-import { JestStatus } from './status';
+import { JestStatus, emptyAdditionalTestInfo, AdditionalTestInfo } from './status';
 import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts';
 import { TestResult, Status, AssertionResult } from '@jest/test-result';
+import { ConsoleBuffer } from '@jest/console';
 
 const durationHumanizer = new HumanizeDuration(new HumanizeDurationLanguage());
 durationHumanizer.setOptions({
@@ -112,15 +113,28 @@ class MarkdownBuilder {
         }
     }
 
-    appendCode(format:string, text: string) {
+    appendCode(format:string, text: string, indent?: number) {
+        const indentStr = indent === undefined ? '' : ' '.repeat(indent);
         this.appendLine();
-        this.appendLine('```' + format);
-        this.appendLine(text);
-        this.appendLine('```');
+        this.appendLine(indentStr + '```' + format);
+        const lines = text.split('\n');
+        for(const line of lines) {
+            this.appendLine(indentStr + line);    
+        }
+        this.appendLine(indentStr + '```');
     }
 
-    appendTerm(text: string) {
-        this.appendCode('term', text);
+    appendTerm(text: string, indent?: number) {
+        this.appendCode('term', text, indent);
+    }
+
+    appendDetailsStart(summary: string) {
+        this.appendLine(`<details><summary>${summary}</summary>`);
+        this.appendLine();
+    }
+
+    appendDetailsEnd() {
+        this.appendLine(`</details>`);
     }
 
     toString() {
@@ -168,7 +182,7 @@ function appendAssertionResult(assertionResult: AssertionResult, builder: Markdo
     const assertionEmoji = getStatusEmoji(assertionResult.status);
     const name = assertionResultNameToString(assertionResult);
 
-    builder.appendLine(`<details><summary>${assertionEmoji} ${name}</summary>`);
+    builder.appendDetailsStart(`${assertionEmoji} ${name}`);
     builder.append(getStatusText(assertionResult.status));
     if (assertionResult.duration) {
         builder.append(` in ${humanizeDuration(assertionResult.duration)}`);
@@ -178,13 +192,27 @@ function appendAssertionResult(assertionResult: AssertionResult, builder: Markdo
         builder.appendTerm(failureMessage);
         builder.appendLine();
     }
-    builder.appendLine('</details>');
+    builder.appendDetailsEnd();
     builder.appendLine();
 }
 
-function appendTestResult(cwd: string, testResult: TestResult, builder: MarkdownBuilder) {
+function appendConsole(cwd: string, console: ConsoleBuffer, builder: MarkdownBuilder) {
+    builder.appendDetailsStart('Console');
+    builder.appendLine();
+    for(const logEntry of console) {
+        const [path, line] = logEntry.origin.split(':'); 
+        const relativePath = formatRelativePath(cwd, path);
+        builder.appendLine(` * console.${logEntry.type} ${relativePath}`);
+        builder.appendTerm(logEntry.message, 3);
+    }
+    builder.appendLine();
+    builder.appendDetailsEnd();
+}
+
+function appendTestResult(cwd: string, testResult: TestResult, additional: AdditionalTestInfo, builder: MarkdownBuilder) {
     const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
     const path = formatRelativePath(cwd, testResult.testFilePath);
+    builder.appendLine();
     builder.appendLine(`## ${emoji} ${path}`);
     builder.appendLine();
     
@@ -192,11 +220,16 @@ function appendTestResult(cwd: string, testResult: TestResult, builder: Markdown
     for(const assertionResult of orderedAssertions) {
         appendAssertionResult(assertionResult, builder);
     }
+
+    if (additional.console) {
+        appendConsole(cwd, additional.console, builder);
+    }
 }
 
 function appendRunningTest(cwd: string, path: string, builder: MarkdownBuilder) {
     const relativePath = formatRelativePath(cwd, path);
     const emoji = '🏃‍♀️';
+    builder.appendLine();
     builder.appendLine(`## ${emoji} ${relativePath}`);
     builder.appendLine();
 }
@@ -209,7 +242,8 @@ export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean
 
     const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
     for(const testResult of orderedTests) {
-        appendTestResult(cwd, testResult, builder);
+        const additional = status.additionalTestInfo.get(testResult.testFilePath) || emptyAdditionalTestInfo;
+        appendTestResult(cwd, testResult, additional, builder);
     }
 
     const others = [...status.additionalTestInfo.keys()]

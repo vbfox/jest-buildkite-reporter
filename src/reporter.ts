@@ -45,11 +45,6 @@ export class JestBuildkiteReporter implements Reporter {
                     ? 'error'
                     : 'info');
 
-        if (this.config.debug) {
-            console.log('Sending ' + style + ' body:\n' + body);
-            return;
-        }
-
         this.currentPromise = annotate(body, {
             context: this.uniqueKey,
             append: false,
