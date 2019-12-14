@@ -16,7 +16,10 @@
   },
   "scripts": {
     "build": "yarn tsc",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "yarn build",
+    "preversion": "yarn build",
+    "version": "yarn build",
+    "postversion": "git push && git push --tags && npm publish"
   },
   "files": [
     "dist/**/*.js",
