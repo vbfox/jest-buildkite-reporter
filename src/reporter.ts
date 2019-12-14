@@ -1,4 +1,4 @@
-import { getBuildkiteEnv, annotate, AnnotationStyle } from 'buildkite-agent-node';
+import { getBuildkiteEnv, annotate } from 'buildkite-agent-node';
 import { JestStatus } from './status';
 import { renderJestStatus } from './formatter';
 import { getDefaultOptions, ReporterOptions } from './options';
@@ -23,6 +23,11 @@ export class JestBuildkiteReporter implements jest.Reporter {
         }
     }
 
+    /**
+     * Send an annotation to Buildkite asynchronously.
+     * 
+     * This method will re-annotate after doing it if `reAnnotate` is true. 
+     */
     private async annotateNow(): Promise<void> {
         if (this.status === undefined) {
             return;
@@ -56,6 +61,10 @@ export class JestBuildkiteReporter implements jest.Reporter {
         }
     }
 
+    /**
+     * Signal that the state changed and the annotation should be re-computed
+     * and sent to Buildkite. 
+     */
     private onAnnotationChanged() {
         if (this.currentPromise !== undefined) {
             // If an annotation is currently being sent we simply ask for another one to run when it's done
