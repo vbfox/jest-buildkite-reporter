@@ -6,14 +6,14 @@ import { getDefaultOptions, ReporterOptions } from './options';
 export class JestBuildkiteReporter implements jest.Reporter {
     private uniqueKey: string;
     private enabled: boolean;
-    private currentPromise: Promise<any>;
+    private currentPromise: Promise<any> | undefined;
     private status: JestStatus | undefined;
     private config: Required<ReporterOptions>;
     private cwd: string;
+    private reAnnotate: boolean = false;
 
     constructor(private globalConfig: jest.GlobalConfig, options?: ReporterOptions) {
         this.uniqueKey = 'jest-' + (new Date().toISOString());
-        this.currentPromise = Promise.resolve();
         this.config = { ...getDefaultOptions(), ...options };
         this.enabled = getBuildkiteEnv().isPresent || this.config.debug;
         this.cwd = process.cwd();
@@ -23,39 +23,47 @@ export class JestBuildkiteReporter implements jest.Reporter {
         }
     }
 
-    private async annotate(body: string, style: AnnotationStyle) {
-        if (this.config.debug) {
-            console.log('Sending ' + style + ' body:\n' + body);
-            return;
-        }
-
-        await annotate(body, {
-            context: this.uniqueKey,
-            append: false,
-            style
-        });
-    }
-
-    async continue(continuation: () => Promise<any>) {
-        await this.currentPromise;
-        const promise = continuation();
-        this.currentPromise = promise;
-        return promise;
-    }
-
-    private sendNextAnnotation() {
+    private async annotateNow(): Promise<void> {
         if (this.status === undefined) {
             return;
         }
 
-        const text = renderJestStatus(this.cwd, this.status, this.config.debug);
+        const body = renderJestStatus(this.cwd, this.status, this.config.debug);
         const result = this.status.result;
         const style = result.success
                 ? 'success'
                 : (((result.numFailedTests > 0) || (result.numFailedTestSuites > 0))
                     ? 'error'
                     : 'info');
-        this.continue(() => this.annotate(text, style));
+
+        if (this.config.debug) {
+            console.log('Sending ' + style + ' body:\n' + body);
+            return;
+        }
+
+        this.currentPromise = annotate(body, {
+            context: this.uniqueKey,
+            append: false,
+            style
+        });
+
+        await this.currentPromise;
+
+        this.currentPromise = undefined;
+        if (this.reAnnotate) {
+            this.reAnnotate = false;
+            this.annotateNow();
+        }
+    }
+
+    private onAnnotationChanged() {
+        if (this.currentPromise !== undefined) {
+            // If an annotation is currently being sent we simply ask for another one to run when it's done
+            this.reAnnotate = true;
+        } else {
+            // Otherwise we start sending one now
+            this.annotateNow();
+        }
     }
 
     async onRunStart(results: jest.AggregatedResult, options: jest.ReporterOnStartOptions) {
@@ -68,7 +76,7 @@ export class JestBuildkiteReporter implements jest.Reporter {
             estimatedTime: options.estimatedTime,
             result: results
         };
-        this.sendNextAnnotation();
+        this.onAnnotationChanged();
     }
 
     onTestResult(test: jest.Test, testResult: jest.TestResult, aggregatedResult: jest.AggregatedResult) {
@@ -77,7 +85,7 @@ export class JestBuildkiteReporter implements jest.Reporter {
         }
 
         this.status!.result = aggregatedResult;
-        this.sendNextAnnotation();
+        this.onAnnotationChanged();
     }
 
     onTestStart(test: jest.Test) {
@@ -85,7 +93,7 @@ export class JestBuildkiteReporter implements jest.Reporter {
             return;
         }
 
-        this.sendNextAnnotation();
+        this.onAnnotationChanged();
     }
 
     async onRunComplete(contexts: Set<jest.Context>, results: jest.AggregatedResult): Promise<void> {
@@ -96,6 +104,15 @@ export class JestBuildkiteReporter implements jest.Reporter {
         this.status!.inProgress = false;
         this.status!.result = results;
         this.status!.endTime = new Date();
-        return this.sendNextAnnotation();
+        
+        if (this.currentPromise) {
+            // If a previous annotation was being sent
+            // ensure it doesn't re-annotate and wait for it to end.
+            this.reAnnotate = false;
+            await this.currentPromise;
+        }
+
+        // Send one last annotation with the final info
+        await this.annotateNow();
     }
 }
