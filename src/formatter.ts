@@ -166,7 +166,7 @@ function appendAssertionResult(assertionResult: jest.AssertionResult, builder: M
     builder.appendLine(`<details><summary>${assertionEmoji} ${name}</summary>`);
     builder.append(getStatusText(assertionResult.status));
     if (assertionResult.duration) {
-        builder.append(` in: ${humanizeDuration(assertionResult.duration)}`);
+        builder.append(` in ${humanizeDuration(assertionResult.duration)}`);
     }
     builder.appendLine();
     for (const failureMessage of assertionResult.failureMessages) {
