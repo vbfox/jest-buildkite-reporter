@@ -95,14 +95,10 @@ export class JestBuildkiteReporter implements Reporter {
             return;
         }
 
+        // Some information like console logs are stripped from AggregatedResult
         this.status!.additionalTestInfo.set(testResult.testFilePath, {
             console: testResult.console
         });
-
-        require('fs').writeFileSync(
-            "debug-" + (this.i++) + ".md",
-            JSON.stringify(testResult, undefined, 4)
-        );
 
         this.status!.result = aggregatedResult;
         this.onAnnotationChanged();
@@ -113,6 +109,7 @@ export class JestBuildkiteReporter implements Reporter {
             return;
         }
 
+        // AggregatedResult don't contain running tests
         this.status!.additionalTestInfo.set(test.path, emptyAdditionalTestInfo);
 
         this.onAnnotationChanged();
