@@ -2,6 +2,7 @@
 import { orderBy } from 'lodash';
 import { JestStatus } from './status';
 import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts';
+import { TestResult, Status, AssertionResult } from '@jest/test-result';
 
 const durationHumanizer = new HumanizeDuration(new HumanizeDurationLanguage());
 durationHumanizer.setOptions({
@@ -27,7 +28,7 @@ function formatRelativePath(root: string, path: string) {
     return path.replace(root + '/', '').replace(root, '');
 }
 
-function getStatusEmoji(status: jest.Status) {
+function getStatusEmoji(status: Status) {
     switch(status) {
         case 'failed' : return '❌';
         case 'passed' : return '✅';
@@ -37,7 +38,7 @@ function getStatusEmoji(status: jest.Status) {
     }
 }
 
-function getStatusText(status: jest.Status) {
+function getStatusText(status: Status) {
     switch(status) {
         case 'failed' : return 'Failed';
         case 'passed' : return 'Passed';
@@ -47,7 +48,7 @@ function getStatusText(status: jest.Status) {
     }
 }
 
-function assertionResultNameToString(result: jest.AssertionResult) {
+function assertionResultNameToString(result: AssertionResult) {
     const allTitles = [...result.ancestorTitles, result.title];
     return allTitles.join(' ➤ ');
 }
@@ -111,11 +112,15 @@ class MarkdownBuilder {
         }
     }
 
-    appendTerm(text: string) {
+    appendCode(format:string, text: string) {
         this.appendLine();
-        this.appendLine('```term');
+        this.appendLine('```' + format);
         this.appendLine(text);
         this.appendLine('```');
+    }
+
+    appendTerm(text: string) {
+        this.appendCode('term', text);
     }
 
     toString() {
@@ -159,7 +164,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     builder.append(`${status.result.numTotalTests} total`);
 }
 
-function appendAssertionResult(assertionResult: jest.AssertionResult, builder: MarkdownBuilder) {
+function appendAssertionResult(assertionResult: AssertionResult, builder: MarkdownBuilder) {
     const assertionEmoji = getStatusEmoji(assertionResult.status);
     const name = assertionResultNameToString(assertionResult);
 
@@ -177,7 +182,7 @@ function appendAssertionResult(assertionResult: jest.AssertionResult, builder: M
     builder.appendLine();
 }
 
-function appendTestResult(cwd: string, testResult: jest.TestResult, builder: MarkdownBuilder) {
+function appendTestResult(cwd: string, testResult: TestResult, builder: MarkdownBuilder) {
     const emoji = testResult.numFailingTests === 0 ? '✅' : '❌';
     const path = formatRelativePath(cwd, testResult.testFilePath);
     builder.appendLine(`## ${emoji} ${path}`);
@@ -189,6 +194,13 @@ function appendTestResult(cwd: string, testResult: jest.TestResult, builder: Mar
     }
 }
 
+function appendRunningTest(cwd: string, path: string, builder: MarkdownBuilder) {
+    const relativePath = formatRelativePath(cwd, path);
+    const emoji = '🏃‍♀️';
+    builder.appendLine(`## ${emoji} ${relativePath}`);
+    builder.appendLine();
+}
+
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     const builder = new MarkdownBuilder();
     getJestStatusSummary(status, builder);
@@ -198,6 +210,12 @@ export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean
     const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
     for(const testResult of orderedTests) {
         appendTestResult(cwd, testResult, builder);
+    }
+
+    const others = [...status.additionalTestInfo.keys()]
+        .filter(testPath => orderedTests.findIndex(p => p.testFilePath === testPath) === -1);
+    for(const other of others) {
+        appendRunningTest(cwd, other, builder);
     }
 
     const text = builder.toString();

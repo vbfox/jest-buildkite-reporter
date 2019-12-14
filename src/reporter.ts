@@ -1,9 +1,13 @@
 import { getBuildkiteEnv, annotate } from 'buildkite-agent-node';
-import { JestStatus } from './status';
+import { JestStatus, AdditionalTestInfo, emptyAdditionalTestInfo } from './status';
 import { renderJestStatus } from './formatter';
 import { getDefaultOptions, ReporterOptions } from './options';
+import { AggregatedResult, TestResult } from '@jest/test-result';
+import { Reporter, ReporterOnStartOptions } from '@jest/reporters'
+import { Context, Test } from '@jest/reporters/build/types';
+import { Config } from '@jest/types';
 
-export class JestBuildkiteReporter implements jest.Reporter {
+export class JestBuildkiteReporter implements Reporter {
     private uniqueKey: string;
     private enabled: boolean;
     private currentPromise: Promise<any> | undefined;
@@ -12,7 +16,7 @@ export class JestBuildkiteReporter implements jest.Reporter {
     private cwd: string;
     private reAnnotate: boolean = false;
 
-    constructor(private globalConfig: jest.GlobalConfig, options?: ReporterOptions) {
+    constructor(private globalConfig: Config.GlobalConfig, options?: ReporterOptions) {
         this.uniqueKey = 'jest-' + (new Date().toISOString());
         this.config = { ...getDefaultOptions(), ...options };
         this.enabled = getBuildkiteEnv().isPresent || this.config.debug;
@@ -75,7 +79,7 @@ export class JestBuildkiteReporter implements jest.Reporter {
         }
     }
 
-    async onRunStart(results: jest.AggregatedResult, options: jest.ReporterOnStartOptions) {
+    async onRunStart(results: AggregatedResult, options: ReporterOnStartOptions) {
         if (!this.enabled) {
             return;
         }
@@ -83,29 +87,43 @@ export class JestBuildkiteReporter implements jest.Reporter {
         this.status = {
             inProgress: true,
             estimatedTime: options.estimatedTime,
-            result: results
+            result: results,
+            additionalTestInfo: new Map<string, AdditionalTestInfo>(),
         };
         this.onAnnotationChanged();
     }
 
-    onTestResult(test: jest.Test, testResult: jest.TestResult, aggregatedResult: jest.AggregatedResult) {
+    i = 0;
+
+    onTestResult(test: Test, testResult: TestResult, aggregatedResult: AggregatedResult) {
         if (!this.enabled) {
             return;
         }
+
+        this.status!.additionalTestInfo.set(testResult.testFilePath, {
+            console: testResult.console
+        });
+
+        require('fs').writeFileSync(
+            "debug-" + (this.i++) + ".md",
+            JSON.stringify(testResult, undefined, 4)
+        );
 
         this.status!.result = aggregatedResult;
         this.onAnnotationChanged();
     }
 
-    onTestStart(test: jest.Test) {
+    onTestStart(test: Test) {
         if (!this.enabled) {
             return;
         }
 
+        this.status!.additionalTestInfo.set(test.path, emptyAdditionalTestInfo);
+
         this.onAnnotationChanged();
     }
 
-    async onRunComplete(contexts: Set<jest.Context>, results: jest.AggregatedResult): Promise<void> {
+    async onRunComplete(contexts: Set<Context>, results: AggregatedResult): Promise<void> {
         if (!this.enabled) {
             return;
         }
@@ -123,5 +141,8 @@ export class JestBuildkiteReporter implements jest.Reporter {
 
         // Send one last annotation with the final info
         await this.annotateNow();
+    }
+
+    getLastError() {
     }
 }
