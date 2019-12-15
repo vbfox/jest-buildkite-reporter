@@ -5,6 +5,7 @@ import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts
 import { TestResult, Status, AssertionResult } from '@jest/test-result';
 import { ConsoleBuffer } from '@jest/console';
 import { MarkdownBuilder } from './markdownBuilder';
+import { ResolvedReporterOptions } from './options';
 
 const durationHumanizer = new HumanizeDuration(new HumanizeDurationLanguage());
 durationHumanizer.setOptions({
@@ -180,8 +181,13 @@ function appendRunningTests(cwd: string, testResults: TestResult[], additionalTe
     }
 }
 
-export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
+export function renderJestStatus(cwd: string, status: JestStatus, options: ResolvedReporterOptions) {
     const builder = new MarkdownBuilder();
+
+    if (options.title) {
+        builder.appendLine(`# ${options.title}`);
+        builder.appendLine();
+    }
 
     const finishedWithSuccess = !status.inProgress && isSuccessfulResult(status.result);
     getJestStatusSummary(status, builder);
@@ -206,7 +212,7 @@ export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean
     }
 
     const text = builder.toString();
-    if (debug) {
+    if (options.debug) {
         require('fs').writeFileSync("debug.md", text);
     }
     return text;

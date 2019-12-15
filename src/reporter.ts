@@ -1,7 +1,7 @@
 import { getBuildkiteEnv, annotate, AnnotationStyle, resolveConfig } from 'buildkite-agent-node';
 import { JestStatus, AdditionalTestInfo, emptyAdditionalTestInfo, isSuccessfulResult } from './status';
 import { renderJestStatus } from './formatter';
-import { getDefaultOptions, ReporterOptions } from './options';
+import { getDefaultOptions, ReporterOptions, ResolvedReporterOptions } from './options';
 import { AggregatedResult, TestResult } from '@jest/test-result';
 import { Reporter, ReporterOnStartOptions } from '@jest/reporters'
 import { Context, Test } from '@jest/reporters/build/types';
@@ -24,14 +24,14 @@ export class JestBuildkiteReporter implements Reporter {
     private enabled: boolean;
     private currentPromise: Promise<any> | undefined;
     private status: JestStatus | undefined;
-    private config: Required<ReporterOptions>;
+    private options: ResolvedReporterOptions;
     private cwd: string;
     private reAnnotate: boolean = false;
 
     constructor(private globalConfig: Config.GlobalConfig, options?: ReporterOptions) {
         this.uniqueKey = 'jest-' + (new Date().toISOString());
-        this.config = { ...getDefaultOptions(), ...options };
-        this.enabled = getBuildkiteEnv().isPresent || this.config.debug;
+        this.options = { ...getDefaultOptions(), ...options };
+        this.enabled = getBuildkiteEnv().isPresent || this.options.debug;
         this.cwd = process.cwd();
         if (!!globalConfig.verbose) {
             console.log('Jest Buildkite reporter is ' + (this.enabled ? 'enabled' : 'disabled'));
@@ -49,7 +49,7 @@ export class JestBuildkiteReporter implements Reporter {
             return;
         }
 
-        const body = renderJestStatus(this.cwd, this.status, this.config.debug);
+        const body = renderJestStatus(this.cwd, this.status, this.options);
         const result = this.status.result;
         const style = getAnnotationStyle(this.status.inProgress, result);
 
@@ -67,7 +67,7 @@ export class JestBuildkiteReporter implements Reporter {
             this.currentPromise = undefined;
             this.reAnnotate = false;
             
-            const resolvedAgentConfig = resolveConfig(this.config.agentConfig);
+            const resolvedAgentConfig = resolveConfig(this.options.agentConfig);
             console.error(`jest-buildkite-reporter failed on endpoint '${resolvedAgentConfig.endpoint}' and job '${resolvedAgentConfig.jobId}':\n\n`, error);
             return;
         }
