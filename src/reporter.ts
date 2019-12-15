@@ -1,4 +1,4 @@
-import { getBuildkiteEnv, annotate } from 'buildkite-agent-node';
+import { getBuildkiteEnv, annotate, AnnotationStyle, resolveConfig } from 'buildkite-agent-node';
 import { JestStatus, AdditionalTestInfo, emptyAdditionalTestInfo } from './status';
 import { renderJestStatus } from './formatter';
 import { getDefaultOptions, ReporterOptions } from './options';
@@ -33,17 +33,17 @@ export class JestBuildkiteReporter implements Reporter {
      * This method will re-annotate after doing it if `reAnnotate` is true. 
      */
     private async annotateNow(): Promise<void> {
-        if (this.status === undefined) {
+        if (this.status === undefined || !this.enabled) {
             return;
         }
 
         const body = renderJestStatus(this.cwd, this.status, this.config.debug);
         const result = this.status.result;
         const style = result.success
-                ? 'success'
+                ? AnnotationStyle.Success
                 : (((result.numFailedTests > 0) || (result.numFailedTestSuites > 0))
-                    ? 'error'
-                    : 'info');
+                    ? AnnotationStyle.Error
+                    : AnnotationStyle.Info);
 
         this.currentPromise = annotate(body, {
             context: this.uniqueKey,
@@ -51,7 +51,18 @@ export class JestBuildkiteReporter implements Reporter {
             style
         });
 
-        await this.currentPromise;
+        try {
+            await this.currentPromise;
+        }
+        catch (error) {
+            this.enabled = false;
+            this.currentPromise = undefined;
+            this.reAnnotate = false;
+            
+            const resolvedAgentConfig = resolveConfig(this.config.agentConfig);
+            console.error(`jest-buildkite-reporter failed on endpoint '${resolvedAgentConfig.endpoint}' and job '${resolvedAgentConfig.jobId}':\n\n`, error);
+            return;
+        }
 
         this.currentPromise = undefined;
         if (this.reAnnotate) {

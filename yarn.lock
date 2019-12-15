@@ -654,12 +654,15 @@ buffer-from@1.x, buffer-from@^1.0.0:
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
   integrity sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
 
-buildkite-agent-node@^0.0.3:
-  version "0.0.3"
-  resolved "https://registry.yarnpkg.com/buildkite-agent-node/-/buildkite-agent-node-0.0.3.tgz#0acc1843a6f8df57dfbf0b7466f5e1f989c35f61"
-  integrity sha512-U3EQ2UPo5fPFZRAPyMed49u2W86CYgQRjOz+/bIWZNZyVSR+Wu0JbqtuDTOKSR51CQAMoXszpdez9kjZ/hdKrQ==
+buildkite-agent-node@0.0.6:
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/buildkite-agent-node/-/buildkite-agent-node-0.0.6.tgz#5499f0be677d393307009e53f60e19e7018f4235"
+  integrity sha512-jwMVdqmaZ9abOIDETZJQVNDpOJNHyI/a+45DWZoHRTz9/x5MSaGOSWpKxcMasGj/oZkVUxte/RnY0kI6yOY5lg==
   dependencies:
+    glob "^7.1.6"
     node-fetch "^2.6.0"
+    node-uuid "^1.4.8"
+    verror "^1.10.0"
 
 cache-base@^1.0.1:
   version "1.0.1"
@@ -1260,7 +1263,7 @@ getpass@^0.1.1:
   dependencies:
     assert-plus "^1.0.0"
 
-glob@^7.1.1, glob@^7.1.2, glob@^7.1.3:
+glob@^7.1.1, glob@^7.1.2, glob@^7.1.3, glob@^7.1.6:
   version "7.1.6"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.1.6.tgz#141f33b81a7c2492e125594307480c46679278a6"
   integrity sha512-LwaxwyZ72Lk7vZINtNNrywX0ZuLyStrdDtabefZKAY5ZGJhVtgdznluResxNmPitE0SAO+O26sWTHeKSI2wMBA==
@@ -2409,6 +2412,11 @@ node-pre-gyp@^0.12.0:
     semver "^5.3.0"
     tar "^4"
 
+node-uuid@^1.4.8:
+  version "1.4.8"
+  resolved "https://registry.yarnpkg.com/node-uuid/-/node-uuid-1.4.8.tgz#b040eb0923968afabf8d32fb1f17f1167fdab907"
+  integrity sha1-sEDrCSOWivq/jTL7HxfxFn/auQc=
+
 nopt@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/nopt/-/nopt-4.0.1.tgz#d0d4685afd5415193c8c7505602d0d17cd64474d"
@@ -3460,7 +3468,7 @@ validate-npm-package-license@^3.0.1:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
 
-verror@1.10.0:
+verror@1.10.0, verror@^1.10.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/verror/-/verror-1.10.0.tgz#3a105ca17053af55d6e270c1f8288682e18da400"
   integrity sha1-OhBcoXBTr1XW4nDB+CiGguGNpAA=
