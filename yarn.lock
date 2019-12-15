@@ -654,10 +654,10 @@ buffer-from@1.x, buffer-from@^1.0.0:
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
   integrity sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
 
-buildkite-agent-node@0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/buildkite-agent-node/-/buildkite-agent-node-0.0.6.tgz#5499f0be677d393307009e53f60e19e7018f4235"
-  integrity sha512-jwMVdqmaZ9abOIDETZJQVNDpOJNHyI/a+45DWZoHRTz9/x5MSaGOSWpKxcMasGj/oZkVUxte/RnY0kI6yOY5lg==
+buildkite-agent-node@0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/buildkite-agent-node/-/buildkite-agent-node-0.0.7.tgz#6f1e5fe65b6580e731215c978e1e614c96ec889b"
+  integrity sha512-3gTi65WDEmmd9G3v7peDt9PT8KN7zb+oElC9JMZEi6ylpxBxgnmSwQJTiXF7EXv3wh3XUPK86E5Da11RvYx4JA==
   dependencies:
     glob "^7.1.6"
     node-fetch "^2.6.0"

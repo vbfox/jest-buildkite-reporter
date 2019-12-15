@@ -36,7 +36,7 @@
     "jest": "^24.9.0"
   },
   "dependencies": {
-    "buildkite-agent-node": "0.0.6",
+    "buildkite-agent-node": "0.0.7",
     "humanize-duration-ts": "^2.0.0",
     "lodash": "^4.17.15"
   }
