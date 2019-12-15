@@ -62,7 +62,8 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     } else {
         const end = (status.endTime || new Date()).valueOf();
         const time = end - status.result.startTime;
-        const endMessage = status.result.success ? 'succeeded' : 'failed';
+        const success = status.result.numFailedTests == 0 && status.result.numFailedTestSuites == 0;
+        const endMessage = success ? 'succeeded' : 'failed';
         builder.append(`Tests ${endMessage} in ${humanizeDuration(time)}`);
     }
     if (status.inProgress) {
