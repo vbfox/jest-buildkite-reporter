@@ -7,6 +7,18 @@ import { Reporter, ReporterOnStartOptions } from '@jest/reporters'
 import { Context, Test } from '@jest/reporters/build/types';
 import { Config } from '@jest/types';
 
+function getAnnotationStyle(result: AggregatedResult): AnnotationStyle {
+    if (result.success) {
+        return AnnotationStyle.Success;
+    }
+    
+    if ((result.numFailedTests > 0) || (result.numFailedTestSuites > 0)) {
+        return AnnotationStyle.Error;
+    }
+    
+    return AnnotationStyle.Info;
+}
+
 export class JestBuildkiteReporter implements Reporter {
     private uniqueKey: string;
     private enabled: boolean;
@@ -39,11 +51,7 @@ export class JestBuildkiteReporter implements Reporter {
 
         const body = renderJestStatus(this.cwd, this.status, this.config.debug);
         const result = this.status.result;
-        const style = result.success
-                ? AnnotationStyle.Success
-                : (((result.numFailedTests > 0) || (result.numFailedTestSuites > 0))
-                    ? AnnotationStyle.Error
-                    : AnnotationStyle.Info);
+        const style = getAnnotationStyle(result);
 
         this.currentPromise = annotate(body, {
             context: this.uniqueKey,
