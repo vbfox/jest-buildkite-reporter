@@ -6,7 +6,7 @@
         "noImplicitAny": true,
         "strict": true,
         "removeComments": false,
-        "allowSyntheticDefaultImports": true,
+        "skipLibCheck": true,
         "outDir": "dist",
         "declaration": true,
         "incremental": true
