@@ -7,16 +7,16 @@ import { Reporter, ReporterOnStartOptions } from '@jest/reporters'
 import { Context, Test } from '@jest/reporters/build/types';
 import { Config } from '@jest/types';
 
-function getAnnotationStyle(result: AggregatedResult): AnnotationStyle {
-    if (result.success) {
-        return AnnotationStyle.Success;
-    }
-    
+function getAnnotationStyle(inProgress: boolean, result: AggregatedResult): AnnotationStyle {
     if ((result.numFailedTests > 0) || (result.numFailedTestSuites > 0)) {
         return AnnotationStyle.Error;
     }
     
-    return AnnotationStyle.Info;
+    if (inProgress) {
+        return AnnotationStyle.Info;
+    }
+    
+    return AnnotationStyle.Success;
 }
 
 export class JestBuildkiteReporter implements Reporter {
@@ -106,7 +106,7 @@ export class JestBuildkiteReporter implements Reporter {
         };
         this.onAnnotationChanged();
     }
-    
+
     onTestResult(test: Test, testResult: TestResult, aggregatedResult: AggregatedResult) {
         if (!this.enabled) {
             return;
