@@ -1,6 +1,6 @@
 
 import { orderBy } from 'lodash';
-import { JestStatus, emptyAdditionalTestInfo, AdditionalTestInfo } from './status';
+import { JestStatus, emptyAdditionalTestInfo, AdditionalTestInfo, isSuccessfulResult } from './status';
 import { HumanizeDurationLanguage, HumanizeDuration } from 'humanize-duration-ts';
 import { TestResult, Status, AssertionResult } from '@jest/test-result';
 import { ConsoleBuffer } from '@jest/console';
@@ -62,7 +62,7 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
     } else {
         const end = (status.endTime || new Date()).valueOf();
         const time = end - status.result.startTime;
-        const success = status.result.numFailedTests == 0 && status.result.numFailedTestSuites == 0;
+        const success = isSuccessfulResult(status.result);
         const endMessage = success ? 'succeeded' : 'failed';
         builder.append(`Tests ${endMessage} in ${humanizeDuration(time)}`);
     }
@@ -183,13 +183,13 @@ function appendRunningTests(cwd: string, testResults: TestResult[], additionalTe
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     const builder = new MarkdownBuilder();
 
+    const finishedWithSuccess = !status.inProgress && isSuccessfulResult(status.result);
     getJestStatusSummary(status, builder);
     builder.appendLine();
     builder.appendLine();
 
-    const finishedWithSuccess = !status.inProgress && status.result.success;
     if (finishedWithSuccess) {
-        // When finished no need for details
+        // When finished successfully no need for details
         builder.appendDetailsStart('Details');
     }
 

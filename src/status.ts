@@ -18,3 +18,8 @@ export interface JestStatus {
     endTime?: Date;
     additionalTestInfo: Map<string, AdditionalTestInfo>;
 }
+
+export function isSuccessfulResult(result: AggregatedResult) {
+    return result.numFailedTestSuites == 0
+        && result.numFailedTests == 0;
+}

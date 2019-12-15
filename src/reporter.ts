@@ -1,5 +1,5 @@
 import { getBuildkiteEnv, annotate, AnnotationStyle, resolveConfig } from 'buildkite-agent-node';
-import { JestStatus, AdditionalTestInfo, emptyAdditionalTestInfo } from './status';
+import { JestStatus, AdditionalTestInfo, emptyAdditionalTestInfo, isSuccessfulResult } from './status';
 import { renderJestStatus } from './formatter';
 import { getDefaultOptions, ReporterOptions } from './options';
 import { AggregatedResult, TestResult } from '@jest/test-result';
@@ -8,7 +8,7 @@ import { Context, Test } from '@jest/reporters/build/types';
 import { Config } from '@jest/types';
 
 function getAnnotationStyle(inProgress: boolean, result: AggregatedResult): AnnotationStyle {
-    if ((result.numFailedTests > 0) || (result.numFailedTestSuites > 0)) {
+    if (!isSuccessfulResult(result)) {
         return AnnotationStyle.Error;
     }
     
@@ -51,7 +51,7 @@ export class JestBuildkiteReporter implements Reporter {
 
         const body = renderJestStatus(this.cwd, this.status, this.config.debug);
         const result = this.status.result;
-        const style = getAnnotationStyle(result);
+        const style = getAnnotationStyle(this.status.inProgress, result);
 
         this.currentPromise = annotate(body, {
             context: this.uniqueKey,
