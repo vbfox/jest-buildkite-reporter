@@ -61,8 +61,9 @@ function getJestStatusSummary(status: JestStatus, builder: MarkdownBuilder) {
         builder.append(`Tests are running for ${humanizeDuration(time)}`);
     } else {
         const end = (status.endTime || new Date()).valueOf();
-        const time = end - status.result.startTime
-        builder.append(`Tests finished in ${humanizeDuration(time)}`);
+        const time = end - status.result.startTime;
+        const endMessage = status.result.success ? 'succeeded' : 'failed';
+        builder.append(`Tests ${endMessage} in ${humanizeDuration(time)}`);
     }
     if (status.inProgress) {
         builder.append(` of ${humanizeDuration(status.estimatedTime)} estimated`);
@@ -163,22 +164,44 @@ function appendRunningTest(cwd: string, path: string, builder: MarkdownBuilder) 
     builder.appendLine();
 }
 
+function appendTestResults(cwd: string, testResults: TestResult[], additionalTestInfo: Map<string, AdditionalTestInfo>, builder: MarkdownBuilder) {
+    for(const testResult of testResults) {
+        const additional = additionalTestInfo.get(testResult.testFilePath) || emptyAdditionalTestInfo;
+        appendTestResult(cwd, testResult, additional, builder);
+    }
+}
+
+function appendRunningTests(cwd: string, testResults: TestResult[], additionalTestInfo: Map<string, AdditionalTestInfo>, builder: MarkdownBuilder) {
+    const others = [...additionalTestInfo.keys()]
+        .filter(testPath => testResults.findIndex(p => p.testFilePath === testPath) === -1);
+    for(const other of others) {
+        appendRunningTest(cwd, other, builder);
+    }
+}
+
 export function renderJestStatus(cwd: string, status: JestStatus, debug: boolean) {
     const builder = new MarkdownBuilder();
+
     getJestStatusSummary(status, builder);
     builder.appendLine();
     builder.appendLine();
 
-    const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
-    for(const testResult of orderedTests) {
-        const additional = status.additionalTestInfo.get(testResult.testFilePath) || emptyAdditionalTestInfo;
-        appendTestResult(cwd, testResult, additional, builder);
+    const finishedWithSuccess = !status.inProgress && status.result.success;
+    if (finishedWithSuccess) {
+        // When finished no need for details
+        builder.appendDetailsStart('Details');
     }
 
-    const others = [...status.additionalTestInfo.keys()]
-        .filter(testPath => orderedTests.findIndex(p => p.testFilePath === testPath) === -1);
-    for(const other of others) {
-        appendRunningTest(cwd, other, builder);
+    const orderedTests = orderBy(status.result.testResults, ['numFailingTests', 'testFilePath'], ['desc', 'asc']);
+    const successfulTests = orderedTests.filter(t => t.numFailingTests == 0);
+    const failedTests = orderedTests.filter(t => t.numFailingTests > 0);
+    
+    appendTestResults(cwd, failedTests, status.additionalTestInfo, builder);
+    appendRunningTests(cwd, orderedTests, status.additionalTestInfo, builder);
+    appendTestResults(cwd, successfulTests, status.additionalTestInfo, builder);
+
+    if (finishedWithSuccess) {
+        builder.appendDetailsEnd();
     }
 
     const text = builder.toString();
