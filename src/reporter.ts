@@ -106,9 +106,7 @@ export class JestBuildkiteReporter implements Reporter {
         };
         this.onAnnotationChanged();
     }
-
-    i = 0;
-
+    
     onTestResult(test: Test, testResult: TestResult, aggregatedResult: AggregatedResult) {
         if (!this.enabled) {
             return;
