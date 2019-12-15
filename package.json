@@ -18,7 +18,6 @@
     "build": "yarn tsc",
     "prepublishOnly": "yarn build",
     "preversion": "yarn build",
-    "version": "yarn build",
     "postversion": "git push && git push --tags"
   },
   "files": [
