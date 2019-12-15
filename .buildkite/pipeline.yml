@@ -1,0 +1,9 @@
+steps:
+  - command: "yarn install && yarn test-success"
+    label: "Build Success"
+  - command: "yarn install && yarn test-failure"
+    label: "Build Failure"
+  - command: "yarn install && yarn test-no-tests"
+    label: "Build no tests"
+  - command: "yarn install && yarn test-no-tests-but-ok"
+    label: "Build no tests but ok"

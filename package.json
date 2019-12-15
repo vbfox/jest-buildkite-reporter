@@ -16,6 +16,10 @@
   },
   "scripts": {
     "build": "yarn tsc",
+    "test-success": "yarn build && yarn jest --config jest_success.config.js",
+    "test-failure": "yarn build && yarn jest --config jest_failure.config.js",
+    "test-no-tests": "yarn build && yarn jest --config jest_no_tests.config.js",
+    "test-no-tests-but-ok": "yarn build && yarn jest --passWithNoTests --config jest_no_tests_but_ok.config.js",
     "prepublishOnly": "yarn build",
     "preversion": "yarn build",
     "postversion": "git push && git push --tags"

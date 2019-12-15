@@ -3,8 +3,7 @@ module.exports = {
         debug: process.env.NODE_ENV === 'development'
     }]],
     testMatch: [
-        "**/__tests__/**/*.+(ts|tsx|js)",
-        "**/?(*.)+(spec|test).+(ts|tsx|js)"
+        "**/test/build_failure/**/*.+(ts|tsx|js)",
     ],
     "transform": {
         "^.+\\.(ts|tsx)?$": "ts-jest"
