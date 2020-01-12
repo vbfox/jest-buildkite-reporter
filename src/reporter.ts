@@ -33,7 +33,7 @@ export class JestBuildkiteReporter implements Reporter {
         this.options = { ...getDefaultOptions(), ...options };
         this.enabled = getBuildkiteEnv().isPresent || this.options.debug;
         this.cwd = process.cwd();
-        if (!!globalConfig.verbose) {
+        if (globalConfig.verbose === true) {
             console.log('Jest Buildkite reporter is ' + (this.enabled ? 'enabled' : 'disabled'));
             console.log('\tOptions', options)
         }
