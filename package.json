@@ -37,7 +37,7 @@
     "ci"
   ],
   "peerDependencies": {
-    "jest": "^24 || ^25"
+    "jest": "^24.0 || ^25.0"
   },
   "dependencies": {
     "buildkite-agent-node": "0.0.9",
