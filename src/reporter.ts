@@ -28,12 +28,12 @@ export class JestBuildkiteReporter implements Reporter {
     private cwd: string;
     private reAnnotate: boolean = false;
 
-    constructor(private globalConfig: Config.GlobalConfig, options?: ReporterOptions) {
+    constructor(_globalConfig: Config.GlobalConfig, options?: ReporterOptions) {
         this.uniqueKey = 'jest-' + (new Date().toISOString());
         this.options = { ...getDefaultOptions(), ...options };
         this.enabled = getBuildkiteEnv().isPresent || this.options.debug;
         this.cwd = process.cwd();
-        if (globalConfig.verbose === true) {
+        if (this.options.verbose === true) {
             console.log('Jest Buildkite reporter is ' + (this.enabled ? 'enabled' : 'disabled'));
             console.log('\tOptions', options)
         }

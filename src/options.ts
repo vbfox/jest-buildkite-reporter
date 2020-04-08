@@ -4,12 +4,14 @@ export interface ReporterOptions {
     readonly title?: string;
     readonly debug?: boolean;
     readonly agentConfig ?: ClientConfiguration;
+    readonly verbose?: boolean;
 }
 
 export interface ResolvedReporterOptions {
     readonly title?: string;
     readonly debug: boolean;
     readonly agentConfig: ClientConfiguration;
+    readonly verbose: boolean;
 }
 
 export function getDefaultOptions(): ResolvedReporterOptions {
@@ -17,5 +19,6 @@ export function getDefaultOptions(): ResolvedReporterOptions {
         title: undefined,
         debug: false,
         agentConfig: {},
+        verbose: false,
     }
 }
