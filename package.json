@@ -1,6 +1,6 @@
 {
   "name": "jest-buildkite-reporter",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Jest Buildkite reporter",
   "main": "dist/index.js",
   "repository": "https://github.com/vbfox/jest-buildkite-reporter",
