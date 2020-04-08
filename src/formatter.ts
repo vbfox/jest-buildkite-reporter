@@ -21,6 +21,7 @@ durationHumanizer.setOptions({
         m: () => 'm',
         s: () => 's',
         ms: () => 'ms',
+        decimal: ".",
       }
     }
 })
