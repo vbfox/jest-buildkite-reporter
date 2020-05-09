@@ -843,14 +843,14 @@ buffer-from@1.x, buffer-from@^1.0.0:
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"
   integrity sha512-MQcXEUbCKtEo7bhqEs6560Hyd4XaovZlO/k9V3hjVUF/zwW7KBVdSK4gIt/bzwS9MbR5qob+F5jusZsb0YQK2A==
 
-buildkite-agent-node@^0.0.10:
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/buildkite-agent-node/-/buildkite-agent-node-0.0.10.tgz#8fc05835ffa83c5702e79c61b0278355d6207c94"
-  integrity sha512-OMK18v71SA2jsggtZmFixJQreyrDhnHkqFx2vMNWfXLamjUBgn3qxvVXD9VplRi4LeAPfWOLMoK1FxSefBAV1g==
+buildkite-agent-node@^0.0.11-pre.1:
+  version "0.0.11-pre.1"
+  resolved "https://registry.yarnpkg.com/buildkite-agent-node/-/buildkite-agent-node-0.0.11-pre.1.tgz#e5ac5100b2fc6c7229a64e87c9f68475ebf7619c"
+  integrity sha512-Fz9vECSk+pbibGuiq+Fec4QP3Lhgq0AHF0Vp0xdK76mf4ySUZ353E3keyI7IrjevBSAhyi0f7HUo+FxdyMEfhQ==
   dependencies:
     glob "^7.1.6"
     node-fetch "^2.6.0"
-    uuid "^7.0"
+    uuid "^8.0.0"
     verror "^1.10.0"
 
 cache-base@^1.0.1:
@@ -3291,10 +3291,10 @@ uuid@^3.3.2:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
-uuid@^7.0:
-  version "7.0.3"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.3.tgz#c5c9f2c8cf25dc0a372c4df1441c41f5bd0c680b"
-  integrity sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==
+uuid@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.0.0.tgz#bc6ccf91b5ff0ac07bbcdbf1c7c4e150db4dbb6c"
+  integrity sha512-jOXGuXZAWdsTH7eZLtyXMqUb9EcWMGZNbL9YcGBJl4MH4nrxHmZJhEHvyLFrkxo+28uLb/NYRcStH48fnD0Vzw==
 
 v8-to-istanbul@^4.0.1:
   version "4.1.3"

@@ -40,7 +40,7 @@
     "jest": "^24.0 || ^25.0"
   },
   "dependencies": {
-    "buildkite-agent-node": "^0.0.10",
+    "buildkite-agent-node": "^0.0.11-pre.1",
     "humanize-duration-ts": "^2.0.0",
     "lodash": "^4.17.15"
   }
