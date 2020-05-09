@@ -1,5 +1,6 @@
 # Jest Buildkite reporter
 
+[![CI](https://github.com/vbfox/jest-buildkite-reporter/workflows/CI/badge.svg)](https://github.com/vbfox/jest-buildkite-reporter/actions?query=workflow%3ACI)
 [![npm](https://img.shields.io/npm/v/jest-buildkite-reporter)](https://www.npmjs.com/package/jest-buildkite-reporter)
 
 Report Jest test results in [Buildkite](https://buildkite.com/) output as annotations
